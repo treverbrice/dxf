@@ -38,6 +38,28 @@ const polyline = (entity) => {
     acc += point[0] + ',' + point[1]
     return acc
   }, '')
+  // Empirically it appears that flipping horozontally does not apply to polyline
+  return transformBoundingBoxAndElement(
+    bbox,
+    `<path d="${d}" />`,
+    entity.transforms,
+  )
+}
+
+/**
+ * Create a <path /> element. Interpolates curved entities.
+ */
+const lwpolyline = (entity) => {
+  const vertices = entityToPolyline(entity)
+  const bbox0 = vertices.reduce(
+    (acc, [x, y]) => acc.expandByPoint({ x, y }),
+    new Box2(),
+  )
+  const d = vertices.reduce((acc, point, i) => {
+    acc += i === 0 ? 'M' : 'L'
+    acc += point[0] + ',' + point[1]
+    return acc
+  }, '')
   const element0 = `<path d="${d}" />`
   const { bbox, element } = addFlipXIfApplicable(entity, {
     bbox: bbox0,
@@ -49,6 +71,7 @@ const polyline = (entity) => {
     entity.transforms,
   )
 }
+
 
 /**
  * Create a <circle /> element for the CIRCLE entity.
@@ -324,9 +347,11 @@ const entityToBoundsAndElement = (entity) => {
       }
     }
     case 'LINE':
-    case 'LWPOLYLINE':
     case 'POLYLINE': {
       return polyline(entity)
+    }
+    case 'LWPOLYLINE': {
+      return lwpolyline(entity)
     }
     default:
       logger.warn('entity type not supported in SVG rendering:', entity.type)
