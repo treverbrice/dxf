@@ -29,7 +29,7 @@ const addFlipXIfApplicable = (entity, { bbox, element }) => {
  */
 const polyline = (entity) => {
   const vertices = entityToPolyline(entity)
-  const bbox0 = vertices.reduce(
+  const bbox = vertices.reduce(
     (acc, [x, y]) => acc.expandByPoint({ x, y }),
     new Box2(),
   )
@@ -38,7 +38,7 @@ const polyline = (entity) => {
     acc += point[0] + ',' + point[1]
     return acc
   }, '')
-  // Empirically it appears that flipping horozontally does not apply to polyline
+  // Empirically it appears that flipping horizontally does not apply to polyline
   return transformBoundingBoxAndElement(
     bbox,
     `<path d="${d}" />`,
@@ -48,6 +48,7 @@ const polyline = (entity) => {
 
 /**
  * Create a <path /> element. Interpolates curved entities.
+ * lwpolyline is the same as polyline but addFlipXIfApplicable does apply
  */
 const lwpolyline = (entity) => {
   const vertices = entityToPolyline(entity)
